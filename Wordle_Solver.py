@@ -20,14 +20,26 @@ turn = 1
 previous_word = ['--Previous Guesses--']
 killSwitch = 0
 ### Processing ###
-def letterCount(wordlst=[]):
+def letterCount(wordlst=[],badletters=[]):
     letterCount = {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0,'h':0,'i':0,'j':0,'k':0,'l':0,'m':0,
                    'n':0,'o':0,'p':0,'q':0,'r':0,'s':0,'t':0,'u':0,'v':0,'w':0,'x':0,'y':0,'z':0}
     for word in wordlst:
         for letter in set(word):
             letterCount[letter] += 1
+    for key, value in letterCount.items():
+        if key in badletters:
+            letterCount[key] = 0
     return letterCount
 def wordValue(availableWords=[],letterCount={}):
+    '''
+    Calculates a value of each word based on how often each letter appears in the list of
+    available words.
+
+    :param availableWords: a list of all the available words
+    :param letterCount: a dictionary that's keys are letters in the alphabet and values that
+    show how many times the letters appear in the remaining words.
+    :return: a dictionary that returns a key, value pair of remaining words and their value.
+    '''
     guessValue = {}
     for word in availableWords:
         wordVal = 0
@@ -36,6 +48,18 @@ def wordValue(availableWords=[],letterCount={}):
             guessValue[word] = wordVal
     return guessValue
 def BasicLetters(word_list=[],badLetters=[],goodletters=[]):
+    '''
+    This is an elimination program.
+    First, it looks at letters that have been eliminated and then removes words that have
+    those letters.
+    Second, it looks a letters that are known to be in the words (anything with a G or Y clue)
+    and ensures that the words have all of those letters in them.
+
+    :param word_list: list of words that have not been previously eliminated
+    :param badLetters: list of letters that have been eliminated (marked with a 'B' in the clue)
+    :param goodletters: list of letters that are known to be in the word (tagged 'Y' and 'G')
+    :return: Returns a list of words that have none of the badletters and all the goodletters
+    '''
     firstWords = []
     goodWords = []
     for word in word_list:
@@ -54,6 +78,17 @@ def BasicLetters(word_list=[],badLetters=[],goodletters=[]):
             goodWords.append(word)
     return goodWords
 def correctPositions(word_list=[],goodPos={},badPos={}):
+    '''
+    This function looks at know letter positions (letters that have been coloured in green) and
+    letters of that have been colored in yellow. Yellow letters represent bad letter positions
+    (i.e. letters that cannot go in that position)
+
+    :param word_list: the current list of words that have not been eliminated.
+    :param goodPos: a dictionary that shows the available letters for each position.
+    :param badPos: a dictionary that shows the letter that are not available for each position
+    (shows the letters that have gotten a yellow clue).
+    :return:
+    '''
     goodWords = []
     for word in word_list:
         clearcnt = 0
@@ -65,10 +100,12 @@ def correctPositions(word_list=[],goodPos={},badPos={}):
     return goodWords
 def ClueSolver(puzzleWord='',guessWord=''):
     '''
-    When a playing a game with the program this function handles all of the 
-    :param puzzleWord:
-    :param guessWord:
-    :return:
+    When a playing a game with the program this function automatically calculates the user clue
+    using the BGY framework.
+
+    :param puzzleWord: The word that was selected by the computer
+    :param guessWord: The word that was guessed by the user
+    :return: returns the BGY clue
     '''
     clue = ''
     pos = 0
@@ -137,7 +174,7 @@ while True:
     else:
         print('\nPlease select Yes or No.')
 while True:
-    wordVals = wordValue(available_words,letterCount(available_words))
+    wordVals = wordValue(available_words,letterCount(available_words,bad_letters))
     program_word = max(wordVals,key=wordVals.get)
     if helper == 'yes':
         if len(wordVals) == 1:
